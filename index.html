@@ -3,198 +3,330 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PULSE RADAR · 币安合约异动雷达</title>
+<title>PULSE RADAR · 起飞监控</title>
 <style>
-:root{--bg:#0b0e14;--panel:#131924;--line:#1f2838;--txt:#dde5f0;--dim:#7d899c;--up:#ff4d5e;--dn:#22c58b;--acc:#5b8cff;--warn:#ffb020}
+:root{--bg:#0b0e14;--panel:#131924;--line:#1f2838;--txt:#dde5f0;--dim:#7d899c;--up:#ff4d5e;--dn:#22c58b;--acc:#5b8cff;--warn:#ffb020;--fire:#ff8c1a}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--txt);font:14px/1.5 -apple-system,"PingFang SC",sans-serif}
-header{position:sticky;top:0;z-index:9;background:rgba(11,14,20,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-header h1{font-size:15px;letter-spacing:.5px}
-.badge{font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--line)}
+html,body{height:100%}
+body{background:var(--bg);color:var(--txt);font:13px/1.5 -apple-system,"PingFang SC",sans-serif;overflow:hidden}
+header{z-index:11;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+header h1{font-size:14px}
+.badge{font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid var(--line)}
 .badge.live{color:var(--dn);border-color:var(--dn)}
 .badge.demo{color:var(--warn);border-color:var(--warn)}
 .badge.wait{color:var(--dim)}
-#cd{font-variant-numeric:tabular-nums;color:var(--dim);font-size:12px}
-.bar{display:flex;gap:8px;padding:10px 14px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--line);background:var(--panel)}
-.bar input,.bar select,.bar button{background:#0d1320;border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:6px 10px;font-size:13px}
-.bar input{width:86px}
-.bar button.on{border-color:var(--acc);color:var(--acc)}
-.wrap{overflow-x:auto}
-table{border-collapse:collapse;width:100%;min-width:820px}
-th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
-th{font-size:11px;color:var(--dim);font-weight:500;cursor:pointer;position:sticky;top:52px;background:var(--panel)}
-th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--panel)}
-td:first-child{font-weight:600}
+#cd{font-variant-numeric:tabular-nums;color:var(--dim);font-size:11px}
+#layout{display:grid;grid-template-columns:158px minmax(0,1fr) 224px;grid-template-rows:minmax(0,1fr);height:calc(100vh - var(--hh,44px));height:calc(100dvh - var(--hh,44px))}
+aside{background:var(--panel);overflow-y:auto;min-height:0}
+#left{border-right:1px solid var(--line);padding:10px}
+#right{border-left:1px solid var(--line);padding:8px}
+#mid{overflow:auto;min-height:0;-webkit-overflow-scrolling:touch}
+.fld{margin-bottom:9px}
+.fld label{display:block;font-size:10px;color:var(--dim);margin-bottom:3px}
+.fld input,.fld select{width:100%;background:#0d1320;border:1px solid var(--line);color:var(--txt);border-radius:7px;padding:5px 7px;font-size:12px}
+#sndBtn{width:100%;background:#0d1320;border:1px solid var(--line);color:var(--txt);border-radius:7px;padding:6px;font-size:12px}
+#sndBtn.on{border-color:var(--acc);color:var(--acc)}
+.note{font-size:10px;color:var(--dim);line-height:1.6;margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+#oist{font-size:10px;color:var(--acc);margin-top:6px}
+.boxtitle{font-size:12px;font-weight:700;padding:4px 2px 6px}
+.hotitem,.feeditem{border:1px solid var(--line);border-radius:8px;padding:5px 7px;margin-bottom:5px;font-size:11px;background:#0d1320}
+.hotitem .sym{font-weight:700;font-size:12px}
+.hotitem .row{display:flex;justify-content:space-between;gap:4px}
+.hotitem.fire{border-color:var(--fire)}
+.hotitem.off{opacity:.35}
+.feeditem{color:var(--dim)}
+.feeditem b{color:var(--txt)}
 .up{color:var(--up)} .dn{color:var(--dn)}
-.sig{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;margin-left:5px;background:#1c2740;color:#9db9ff}
-tr.hit td{background:rgba(255,77,94,.06)}
+#hot,#feed{max-height:38vh;overflow-y:auto}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{font-size:10px;color:var(--dim);font-weight:500;cursor:pointer;position:sticky;top:0;background:var(--panel);z-index:5}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--panel);z-index:4}
+th:first-child{z-index:6}
+td:first-child{font-weight:600}
+.sig{display:inline-block;font-size:10px;padding:1px 6px;border-radius:5px;margin:1px 0 1px 4px;background:#1c2740;color:#9db9ff}
+.sig.fire{background:#3a2410;color:var(--fire);border:1px solid var(--fire)}
+tr.hit td{background:rgba(255,77,94,.05)}
+tr.fire td{background:rgba(255,140,26,.09)}
 tr{cursor:pointer}
-#log{padding:10px 14px;font-size:12px;color:var(--dim)}
-#log div{padding:3px 0;border-bottom:1px dashed var(--line)}
-canvas{width:110px;height:34px;vertical-align:middle}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+canvas.mini{width:130px;height:32px;vertical-align:middle}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:30;padding:12px}
 .modal.show{display:flex}
-.box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;max-width:560px;width:100%}
-.box h3{margin-bottom:10px}
-.box canvas{width:100%;height:220px}
-.x{float:right;color:var(--dim);cursor:pointer;font-size:18px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;max-width:620px;width:100%}
+.box h3{margin-bottom:8px;font-size:14px}
+#tfs{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+#tfs button{background:#0d1320;border:1px solid var(--line);color:var(--dim);border-radius:7px;padding:4px 12px;font-size:12px;cursor:pointer}
+#tfs button.on{border-color:var(--acc);color:var(--acc)}
+#mc{width:100%;height:240px}
+#mi{margin-top:6px;color:var(--dim);font-size:11px}
+.x{float:right;color:var(--dim);cursor:pointer;font-size:17px}
+@media(max-width:900px){
+  #layout{display:flex;flex-direction:column}
+  #left{display:flex;flex-wrap:wrap;gap:8px;border-right:none;border-bottom:1px solid var(--line);flex:0 0 auto;overflow:visible}
+  .fld{margin:0;flex:1 1 90px}
+  #sndBtn{flex:0 0 80px}
+  .note,#oist{display:none}
+  #right{border-left:none;border-bottom:1px solid var(--line);display:flex;gap:8px;flex:0 0 auto;overflow:visible}
+  #right>div{flex:1;min-width:0}
+  #hot,#feed{max-height:110px}
+  #mid{flex:1 1 auto}
+}
 </style>
 </head>
 <body>
 <header>
-  <h1>⚡ PULSE RADAR</h1>
+  <h1>🚀 PULSE RADAR</h1>
   <span id="st" class="badge wait">连接中…</span>
   <span id="cd">–</span>
   <span style="flex:1"></span>
-  <button id="sndBtn" class="on">🔔 提示音</button>
+  <span style="font-size:11px;color:var(--dim)">5m涨幅 × OI增仓 · 起飞监控</span>
 </header>
-<div class="bar">
-  <select id="tf"><option value="1m">1分钟</option><option value="5m" selected>5分钟</option><option value="15m">15分钟</option></select>
-  <label>涨幅≥ <input id="pct" type="number" step="0.1" value="1.5">%</label>
-  <label>OI≥ <input id="oi" type="number" step="0.5" value="2">%</label>
-  <label>费率≥ <input id="fr" type="number" step="0.01" value="0.05">%</label>
-  <select id="oif"><option value="5m" selected>5m</option><option value="15m">15m</option><option value="30m">30m</option><option value="1h">1h</option></select>
-  <input id="q" placeholder="搜索币种">
-</div>
-<div class="wrap">
+<div id="layout">
+<aside id="left">
+  <div class="fld"><label>监控币种数</label>
+    <select id="cnt"><option value="40">40</option><option value="80" selected>80</option><option value="150">150</option><option value="300">300</option><option value="0">全部</option></select></div>
+  <div class="fld"><label>5m涨幅 ≥ %</label><input id="pct" type="number" step="0.1" value="1"></div>
+  <div class="fld"><label>OI变化 ≥ %</label><input id="oi" type="number" step="0.5" value="3"></div>
+  <div class="fld"><label>OI统计周期</label>
+    <select id="oif"><option value="5m" selected>5m</option><option value="15m">15m</option><option value="30m">30m</option><option value="1h">1h</option></select></div>
+  <div class="fld"><label>搜索</label><input id="q" placeholder="BTC"></div>
+  <button id="sndBtn" class="on">🔔 提示音开</button>
+  <div id="oist">OI数据源：探测中…</div>
+  <div class="note">起飞形态 = 价格涨 + OI增（真金白银进场）。连续2轮达标进入「持续异动」，熄火后变灰并被新异动覆盖。OI变化若显示 ≈ 表示积累窗口还不足。</div>
+</aside>
+<div id="mid">
 <table id="tbl">
 <thead><tr>
 <th data-k="sym">合约</th><th data-k="price">价格</th>
-<th data-k="chg1">1m%</th><th data-k="chg5">5m%</th><th data-k="chg15">15m%</th>
-<th data-k="oi">持仓量</th><th data-k="oiChg">OI变化%</th><th data-k="funding">费率%</th>
-<th>信号</th><th>走势</th>
+<th data-k="chg5">5m%</th>
+<th data-k="oi">持仓量</th><th data-k="oiChg">OI变化%</th>
+<th>信号</th><th>K线(1m)</th>
 </tr></thead><tbody></tbody>
 </table>
 </div>
-<div id="log"><b>最近异动</b></div>
+<aside id="right">
+  <div><div class="boxtitle">🔥 持续异动</div><div id="hot"></div></div>
+  <div><div class="boxtitle">⚡ 异动流</div><div id="feed"></div></div>
+</aside>
+</div>
+</div>
 
-<div class="modal" id="md"><div class="box"><span class="x" onclick="md.classList.remove('show')">✕</span><h3 id="mt"></h3><canvas id="mc" width="1000" height="440"></canvas><div id="mi" style="margin-top:8px;color:var(--dim);font-size:12px"></div></div></div>
+<div class="modal" id="md"><div class="box">
+<span class="x" onclick="md.classList.remove('show')">✕</span>
+<h3 id="mt"></h3>
+<div id="tfs"></div>
+<canvas id="mc" width="1100" height="480"></canvas>
+<div id="mi"></div>
+</div></div>
 
 <script>
 const API='https://fapi.binance.com';
 const $=id=>document.getElementById(id);
-let coins=[],sortK='vol',sortD=-1,mode='wait',sound=true,ctxT,actx;
-const S={tf:'5m',pct:1.5,oi:2,fr:0.05,oif:'5m',q:''};
-$('tf').onchange=e=>{S.tf=e.target.value;refresh()};
-$('oif').onchange=e=>{S.oif=e.target.value};
-$('pct').oninput=e=>S.pct=+e.target.value||1.5;
-$('oi').oninput=e=>S.oi=+e.target.value||2;
-$('fr').oninput=e=>S.fr=+e.target.value||.05;
+let coins=[],sortK='chg5',sortD=-1,mode='wait',sound=true,actx,cd=0,feed=[],hot={};
+const S={pct:1,oi:3,oif:'5m',q:'',cnt:80};
+const IV={40:15,80:20,150:30,300:45,0:60};
+
+$('cnt').onchange=e=>{S.cnt=+e.target.value;coins=[];feed=[];hot={};refresh()};
+$('oif').onchange=e=>{S.oif=e.target.value;
+  if(OI_MODE==='acc')coins.forEach(c=>{const r=calcOI(oiSamples[c.sym]);if(r){c.oiChg=r[0];c.oiAppr=r[1]}});
+  render()};
+$('pct').oninput=e=>S.pct=+e.target.value||1;
+$('oi').oninput=e=>S.oi=+e.target.value||3;
 $('q').oninput=e=>{S.q=e.target.value.trim().toUpperCase();render()};
-$('sndBtn').onclick=()=>{sound=!sound;$('sndBtn').classList.toggle('on',sound)};
+$('sndBtn').onclick=()=>{sound=!sound;$('sndBtn').classList.toggle('on',sound);$('sndBtn').textContent=sound?'🔔 提示音开':'🔕 提示音关'};
 document.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{
   const k=th.dataset.k;if(sortK===k)sortD*=-1;else{sortK=k;sortD=-1}render()});
 
 function beep(f=880){if(!sound||!actx)return;const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f;o.connect(g);g.connect(actx.destination);g.gain.setValueAtTime(.12,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+.25);o.start();o.stop(actx.currentTime+.26)}
 document.addEventListener('touchstart',()=>{if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}},{once:true});
 
-async function j(p){const c=new AbortController();const t=setTimeout(()=>c.abort(),8000);
-  try{const r=await fetch(API+p,{signal:c.signal});if(!r.ok)throw 0;return await r.json()}finally{clearTimeout(t)}}
+async function j(p){const c=new AbortController();const t=setTimeout(()=>c.abort(),9000);
+  try{const r=await fetch(API+p,{signal:c.signal});if(!r.ok)throw new Error(r.status);return await r.json()}finally{clearTimeout(t)}}
+async function j2(u){const c=new AbortController();const t=setTimeout(()=>c.abort(),9000);
+  try{const r=await fetch(u,{signal:c.signal});if(!r.ok)throw new Error(r.status);return await r.json()}finally{clearTimeout(t)}}
+async function pool(items,worker,size){let i=0;
+  await Promise.all(Array.from({length:size},async()=>{while(i<items.length){const x=i++;try{await worker(items[x])}catch(e){}}}))}
 
 function fmt(n,d=2){return n==null||isNaN(n)?'–':(+n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d})}
-function cls(v){return v>0?'up':v<0?'dn':''}
-function arrows(v,d=2){if(v==null||isNaN(v))return '–';const c=cls(v);const a=v>0?'▲':v<0?'▼':'';return `<span class="${c}">${a} ${fmt(Math.abs(v),d)}</span>`}
+function arrows(v,d=2){if(v==null||isNaN(v))return '–';const a=v>0?'▲':v<0?'▼':'';return `<span class="${v>0?'up':v<0?'dn':''}">${a} ${fmt(Math.abs(v),d)}</span>`}
+function oiChgCell(c){
+  if(c.oiChg==null||isNaN(c.oiChg))return '–';
+  const a=c.oiChg>0?'▲':c.oiChg<0?'▼':'';
+  const ap=c.oiAppr?'≈':'';
+  return `<span class="${c.oiChg>0?'up':c.oiChg<0?'dn':''}">${a} ${ap}${fmt(Math.abs(c.oiChg))}</span>`}
+
+/* ===== OI 数据：三级降级 ===== */
+let OI_MODE='probe';
+const oiSamples={};
+const OI_TF={'5m':3e5,'15m':9e5,'30m':18e5,'1h':36e5};
+async function probeOI(){
+  try{await j('/futures/data/openInterestHist?symbol=BTCUSDT&period=5m&limit=2');OI_MODE='fapi';}
+  catch(e){try{await j2('https://www.binance.com/futures/data/openInterestHist?symbol=BTCUSDT&period=5m&limit=2');OI_MODE='www';}
+  catch(e2){OI_MODE='acc';}}
+  $('oist').textContent='OI数据源：'+(OI_MODE==='fapi'?'币安历史接口':OI_MODE==='www'?'币安镜像接口':'实时积累（页面需运行几分钟）');
+}
+function calcOI(arr){
+  if(!arr||arr.length<2)return null;
+  const last=arr[arr.length-1];
+  if(last.t-arr[0].t<45000)return null;
+  const target=last.t-OI_TF[S.oif];
+  let best=arr[0];
+  for(const s of arr)if(Math.abs(s.t-target)<Math.abs(best.t-target))best=s;
+  if(!(best.v>0))return null;
+  return [(last.v/best.v-1)*100,(last.t-best.t)<OI_TF[S.oif]*0.6];
+}
+async function refreshOI(){
+  if(OI_MODE==='probe')await probeOI();
+  if(OI_MODE==='acc'){
+    await pool(coins,async c=>{
+      const r=await j(`/fapi/v1/openInterest?symbol=${c.sym}`).catch(()=>null);
+      if(r&&r.openInterest){
+        const v=+r.openInterest,t=Date.now();
+        c.oi=v;
+        const arr=oiSamples[c.sym]||(oiSamples[c.sym]=[]);
+        arr.push({t,v});if(arr.length>240)arr.shift();
+        const res=calcOI(arr);
+        if(res){c.oiChg=res[0];c.oiAppr=res[1]}
+      }
+    },6);
+    return;
+  }
+  const base=OI_MODE==='www'?'https://www.binance.com':API;
+  await pool(coins,async c=>{
+    const oh=await j2(`${base}/futures/data/openInterestHist?symbol=${c.sym}&period=${S.oif}&limit=2`).catch(()=>null);
+    if(Array.isArray(oh)&&oh.length>=2){
+      const a=+oh[0].sumOpenInterest,b=+oh[1].sumOpenInterest;
+      if(a>0){c.oi=b;c.oiChg=(b/a-1)*100;c.oiAppr=false}
+    }
+  },6);
+}
 
 async function loadUniverse(){
   const t=await j('/fapi/v1/ticker/24hr');
   coins=t.filter(x=>x.symbol.endsWith('USDT')&&!/(UP|DOWN|BULL|BEAR)USDT$/.test(x.symbol))
-    .sort((a,b)=>b.quoteVolume-a.quoteVolume).slice(0,40)
-    .map(x=>({sym:x.symbol,price:+x.lastPrice,vol:+x.quoteVolume,chg1:null,chg5:null,chg15:null,oi:null,oiChg:null,funding:null,k:null}));
+    .sort((a,b)=>b.quoteVolume-a.quoteVolume).slice(0,S.cnt===0?9999:S.cnt)
+    .map(x=>({sym:x.symbol,price:+x.lastPrice,vol:+x.quoteVolume,chg5:null,oi:null,oiChg:null,oiAppr:false,k:null}));
 }
 async function refreshLive(){
   if(!coins.length)await loadUniverse();
-  const pm=await j('/fapi/v1/premiumIndex');
-  const fm={};pm.forEach(x=>fm[x.symbol]=+x.lastFundingRate*100);
-  await Promise.allSettled(coins.map(async c=>{
-    const [k,oh]=await Promise.all([
-      j(`/fapi/v1/klines?symbol=${c.sym}&interval=1m&limit=17`).catch(()=>null),
-      j(`/fapi/v1/openInterestHist?symbol=${c.sym}&period=${S.oif}&limit=2`).catch(()=>null)]);
-    if(k&&k.length>=16){
-      c.k=k.map(x=>+x[4]);const last=c.k[c.k.length-1];
-      c.price=last;
-      c.chg1=(last/c.k[c.k.length-2]-1)*100;
-      c.chg5=(last/c.k[c.k.length-6]-1)*100;
-      c.chg15=(last/c.k[c.k.length-16]-1)*100;}
-    if(oh&&oh.length>=2){const a=+oh[0].sumOpenInterest,b=+oh[1].sumOpenInterest;
-      if(a>0){c.oi=b;c.oiChg=(b/a-1)*100}}
-    c.funding=fm[c.sym]??null;}));
+  await pool(coins,async c=>{
+    const k=await j(`/fapi/v1/klines?symbol=${c.sym}&interval=1m&limit=17`).catch(()=>null);
+    if(Array.isArray(k)&&k.length>=17){
+      c.k=k.slice(-16).map(x=>({o:+x[1],h:+x[2],l:+x[3],c:+x[4]}));
+      c.price=c.k[c.k.length-1].c;
+      c.chg5=(c.price/c.k[0].o-1)*100;}
+  },6);
+}
+function drawCandles(cv,arr){
+  const g=cv.getContext('2d');const w=cv.width,h=cv.height;g.clearRect(0,0,w,h);
+  if(!arr||!arr.length)return;
+  let mn=1e18,mx=-1e18;arr.forEach(x=>{mn=Math.min(mn,x.l);mx=Math.max(mx,x.h)});
+  const rg=mx-mn||1,cw=w/arr.length;
+  arr.forEach((x,i)=>{const cx=i*cw+cw/2;const up=x.c>=x.o;
+    g.strokeStyle=g.fillStyle=up?'#ff4d5e':'#22c58b';
+    g.beginPath();g.moveTo(cx,h-(x.h-mn)/rg*(h-8)-4);g.lineTo(cx,h-(x.l-mn)/rg*(h-8)-4);g.stroke();
+    const y1=h-(Math.max(x.o,x.c)-mn)/rg*(h-8)-4,y2=h-(Math.min(x.o,x.c)-mn)/rg*(h-8)-4;
+    g.fillRect(cx-cw*0.3,Math.min(y1,y2),cw*0.6,Math.max(1.2,Math.abs(y2-y1)));});
 }
 function sigs(c){
-  const s=[];const p=c[S.tf==='1m'?'chg1':S.tf==='15m'?'chg15':'chg5'];
-  if(p!=null&&c.oiChg!=null){
-    if(p>0&&c.oiChg>0)s.push('多头增仓进攻');
-    else if(p>0&&c.oiChg<0)s.push('空头回补拉升');
-    else if(p<0&&c.oiChg>0)s.push('空头增仓施压');
-    else if(p<0&&c.oiChg<0)s.push('多头减仓退潮');}
-  if(c.funding>=S.fr)s.push('费率偏高·多头拥挤');
-  if(c.funding<=-S.fr)s.push('费率偏低·空头拥挤');
+  const s=[];const fire=c.chg5!=null&&c.chg5>=S.pct&&c.oiChg!=null&&c.oiChg>=S.oi;
+  if(fire)s.push(['量价齐升·起飞候选',1]);
+  else{
+    if(c.chg5!=null&&c.chg5>=S.pct)s.push(['5m涨幅异动',0]);
+    if(c.oiChg!=null&&c.oiChg>=S.oi)s.push(['OI激增',0]);
+    if(c.chg5>0&&c.oiChg>0&&c.chg5<S.pct&&c.oiChg<S.oi)s.push(['多头增仓',0]);
+    if(c.chg5>0&&c.oiChg<0)s.push(['空头回补',0]);}
   return s;
 }
-const hits=[];
-function check(c){
-  const p=c[S.tf==='1m'?'chg1':S.tf==='15m'?'chg15':'chg5'];
-  if(p!=null&&Math.abs(p)>=S.pct||c.oiChg!=null&&Math.abs(c.oiChg)>=S.oi||(c.funding!=null&&Math.abs(c.funding)>=S.fr)){
-    const t=new Date().toLocaleTimeString('zh-CN',{hour12:false});
-    const msg=`${t} ${c.sym} 涨跌${fmt(p)}% OI ${fmt(c.oiChg)}% 费率 ${fmt(c.funding)}`;
-    if(!hits.includes(msg)){hits.unshift(msg);hits.length=Math.min(hits.length,30);beep(p>=0?880:520)}}
+function evaluate(){
+  const now=Date.now();
+  coins.forEach(c=>{
+    const lift=c.chg5!=null&&c.chg5>=S.pct;
+    const oiup=c.oiChg!=null&&c.oiChg>=S.oi&&c.chg5>0;
+    if(lift&&oiup){
+      if(!hot[c.sym]){hot[c.sym]={consec:1,first:now,active:true};beep(980);
+        feed.unshift({t:now,s:c.sym,c:c.chg5,o:c.oiChg});beep(880);}
+      else{hot[c.sym].consec++;hot[c.sym].active=true}
+    }else if(hot[c.sym]&&hot[c.sym].active){hot[c.sym].active=false}
+  });
+  feed=feed.slice(0,30);
+}
+function renderHot(){
+  const list=Object.entries(hot).map(([s,v])=>({s,...v}))
+    .sort((a,b)=>(b.active-a.active)||(b.consec-a.consec)||(b.first-a.first)).slice(0,20);
+  $('hot').innerHTML=list.length?list.map(v=>{
+    const c=coins.find(x=>x.sym===v.s)||{};
+    return `<div class="hotitem ${v.active?'fire':'off'}" onclick="detail('${v.s}')">
+    <div class="row"><span class="sym">${v.s.replace('USDT','')}</span><span class="up">▲${fmt(c.chg5)}%</span></div>
+    <div class="row"><span>OI ${arrows(c.oiChg)}</span><em style="font-style:normal;color:var(--dim)">连续×${v.consec}</em></div></div>`}).join('')
+    :'<div style="font-size:11px;color:var(--dim);padding:6px 2px">暂无持续异动</div>';
+}
+function renderFeed(){
+  $('feed').innerHTML=feed.length?feed.map(f=>`<div class="feeditem">${new Date(f.t).toLocaleTimeString('zh-CN',{hour12:false})} <b>${f.s.replace('USDT','')}</b> <span class="up">+${fmt(f.c)}%</span> OI+${fmt(f.o)}%</div>`).join('')
+    :'<div style="font-size:11px;color:var(--dim);padding:6px 2px">暂无异动</div>';
 }
 function render(){
   const tb=document.querySelector('#tbl tbody');
   const list=coins.filter(c=>!S.q||c.sym.includes(S.q))
-    .sort((a,b)=>{const x=a[sortK],y=b[sortK];return (x==null?-1e15:x)-(y==null?-1e15:y)*sortD});
+    .sort((a,b)=>{const x=a[sortK],y=b[sortK];return((x==null?-1e15:x)-(y==null?-1e15:y))*sortD});
   tb.innerHTML=list.map(c=>{
-    const p=c[S.tf==='1m'?'chg1':S.tf==='15m'?'chg15':'chg5'];
-    const isHit=(p!=null&&Math.abs(p)>=S.pct)||(c.oiChg!=null&&Math.abs(c.oiChg)>=S.oi)||(c.funding!=null&&Math.abs(c.funding)>=S.fr);
-    return `<tr class="${isHit?'hit':''}" data-s="${c.sym}">
+    const fire=c.chg5!=null&&c.chg5>=S.pct&&c.oiChg!=null&&c.oiChg>=S.oi;
+    const isHit=c.chg5!=null&&c.chg5>=S.pct;
+    return `<tr class="${fire?'fire':isHit?'hit':''}" data-s="${c.sym}">
     <td>${c.sym.replace('USDT','')}</td><td>${fmt(c.price,c.price>100?2:4)}</td>
-    <td>${arrows(c.chg1)}</td><td>${arrows(c.chg5)}</td><td>${arrows(c.chg15)}</td>
-    <td>${c.oi==null?'–':fmt(c.oi,0)}</td><td>${arrows(c.oiChg)}</td>
-    <td class="${cls(c.funding)}">${fmt(c.funding,3)}</td>
-    <td>${sigs(c).map(s=>`<span class="sig">${s}</span>`).join('')||'—'}</td>
-    <td><canvas data-c="${c.sym}" width="220" height="68"></canvas></td></tr>`}).join('');
-  tb.querySelectorAll('canvas').forEach(cv=>{const c=coins.find(x=>x.sym===cv.dataset.c);if(c&&c.k)spark(cv,c.k)});
+    <td>${arrows(c.chg5)}</td>
+    <td>${c.oi==null?'–':fmt(c.oi,0)}</td><td>${oiChgCell(c)}</td>
+    <td>${sigs(c).map(s=>`<span class="sig ${s[1]?'fire':''}">${s[0]}</span>`).join('')||'—'}</td>
+    <td><canvas class="mini" data-c="${c.sym}" width="260" height="64"></canvas></td></tr>`}).join('');
+  tb.querySelectorAll('canvas').forEach(cv=>{const c=coins.find(x=>x.sym===cv.dataset.c);if(c)drawCandles(cv,c.k)});
   tb.querySelectorAll('tr').forEach(tr=>tr.onclick=()=>detail(tr.dataset.s));
-  $('log').innerHTML='<b>最近异动</b>'+(hits.length?hits.map(h=>`<div>${h}</div>`).join(''):'<div>暂无异动</div>');
+  renderHot();renderFeed();
 }
-function spark(cv,arr){const g=cv.getContext('2d');const w=cv.width,h=cv.height;g.clearRect(0,0,w,h);
-  const mn=Math.min(...arr),mx=Math.max(...arr),rg=mx-mn||1;
-  const up=arr[arr.length-1]>=arr[0];
-  g.strokeStyle=up?'#ff4d5e':'#22c58b';g.lineWidth=2.5;g.beginPath();
-  arr.forEach((v,i)=>{const x=i/(arr.length-1)*w,y=h-(v-mn)/rg*(h-8)-4;i?g.lineTo(x,y):g.moveTo(x,y)});g.stroke()}
+let curSym=null,curTf='5m';
+const TFS=['1m','3m','5m','15m','1h','4h'];
 function detail(sym){
-  const c=coins.find(x=>x.sym===sym);if(!c||!c.k)return;
-  $('mt').textContent=sym+' · 1分钟走势';
-  $('mi').textContent=`现价 ${fmt(c.price,4)} · 5m ${fmt(c.chg5)}% · 15m ${fmt(c.chg15)}% · OI变化 ${fmt(c.oiChg)}% · 费率 ${fmt(c.funding,3)}%`;
-  const cv=$('mc');cv.width=1000;cv.height=440;const g=cv.getContext('2d');
-  const arr=c.k,mn=Math.min(...arr),mx=Math.max(...arr),rg=mx-mn||1;
-  g.clearRect(0,0,1000,440);g.strokeStyle='#5b8cff';g.lineWidth=4;g.beginPath();
-  arr.forEach((v,i)=>{const x=i/(arr.length-1)*980+10,y=430-(v-mn)/rg*400;i?g.lineTo(x,y):g.moveTo(x,y)});g.stroke();
-  md.classList.add('show');
+  curSym=sym;curTf='5m';
+  $('tfs').innerHTML=TFS.map(t=>`<button data-t="${t}" class="${t===curTf?'on':''}">${t}</button>`).join('');
+  $('tfs').querySelectorAll('button').forEach(b=>b.onclick=()=>{curTf=b.dataset.t;
+    $('tfs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.t===curTf));drawBig()});
+  $('md').classList.add('show');drawBig();
 }
-/* 演示模式 */
-const DS=['BTC','ETH','SOL','BNB','XRP','DOGE','ADA','AVAX','LINK','TON','TRX','DOT','NEAR','APT','ARB','OP','SUI','PEPE','FIL','ATOM','LTC','INJ','TIA','SEI','ORDI','FET','AAVE','UNI','STX','RUNE','CFX','GALA','SAND','AXS','CRV','BLUR','WIF','ETC','BCH','FTM'];
-function seedDemo(){coins=DS.map(s=>{const p=Math.pow(10,(Math.random()*4-2));return{sym:s+'USDT',price:p,vol:Math.random()*9e8,chg1:0,chg5:0,chg15:0,oi:p*1e4*Math.random(),oiChg:0,funding:(Math.random()-.4)*.08,k:Array.from({length:17},()=>p*(1+(Math.random()-.5)*.02))}})}
-function tickDemo(){coins.forEach(c=>{const w=(Math.random()-.5)*.006;
-  c.price*=1+w;c.k.push(c.price);c.k.shift();
-  c.chg1=(c.price/c.k[c.k.length-2]-1)*100;
-  c.chg5=(c.price/c.k[c.k.length-6]-1)*100;
-  c.chg15=(c.price/c.k[0]-1)*100;
-  c.oiChg=(Math.random()-.5)*6;c.oi*=1+c.oiChg/100;
-  c.funding+= (Math.random()-.5)*.01;
-  if(Math.random()<.06)c.chg5+=(Math.random()-.3)*4;});}
+async function drawBig(){
+  const c=coins.find(x=>x.sym===curSym);if(!c)return;
+  $('mt').textContent=curSym.replace('USDT','')+' · '+curTf+' K线';
+  const k=await j(`/fapi/v1/klines?symbol=${curSym}&interval=${curTf}&limit=60`).catch(()=>null);
+  if(Array.isArray(k)){const arr=k.map(x=>({o:+x[1],h:+x[2],l:+x[3],c:+x[4]}));
+    drawCandles($('mc'),arr);
+    $('mi').textContent=`现价 ${fmt(c.price,4)} · 5m ${fmt(c.chg5)}% · OI ${fmt(c.oi,0)} · OI变化 ${c.oiChg==null?'–':(c.oiAppr?'≈':'')+fmt(c.oiChg)+'%'}`;}
+}
+/* 演示模式（币安连不上时自动启用） */
+const DS=['BTC','ETH','SOL','BNB','XRP','DOGE','ADA','AVAX','LINK','TON','TRX','DOT','NEAR','APT','ARB','OP','SUI','PEPE','FIL','ATOM','LTC','INJ','TIA','SEI','ORDI','FET','AAVE','UNI','STX','RUNE','CFX','GALA','SAND','AXS','CRV','BLUR','WIF','ETC','BCH','FTM','JUP','PYTH','MANTA','ALT','DYM','PIXEL','PORTAL','AEVO','ETHFI'];
+function seedDemo(){coins=DS.map(s=>{const p=Math.pow(10,(Math.random()*4-2));
+  return{sym:s+'USDT',price:p,vol:Math.random()*9e8,chg5:(Math.random()-.5)*2,oi:p*1e4*Math.random(),oiChg:(Math.random()-.5)*4,oiAppr:false,
+  k:Array.from({length:16},()=>{const c2=p*(1+(Math.random()-.5)*.02);return{o:c2*(1-(Math.random())*.005),h:c2*(1+Math.random()*.008),l:c2*(1-Math.random()*.008),c:c2}})}})}
+function tickDemo(){coins.forEach(c=>{
+  c.price*=1+(Math.random()-.5)*.004;
+  const nk={o:c.k[c.k.length-1].c,h:c.price*(1+Math.random()*.004),l:c.price*(1-Math.random()*.004),c:c.price};
+  c.k.push(nk);c.k.shift();
+  c.chg5=(c.price/c.k[0].o-1)*100;
+  c.oiChg+=(Math.random()-.5)*.8;
+  if(Math.random()<.08){c.chg5+=(Math.random()*.8+.8);c.oiChg+=Math.random()*3}
+  c.chg5=+c.chg5.toFixed(3);c.oiChg=+c.oiChg.toFixed(3);});}
 function setMode(m,msg){mode=m;const b=$('st');
   b.className='badge '+(m==='live'?'live':'demo');
   b.textContent=m==='live'?'● 实时 · 币安已连接':'● 演示数据 · '+(msg||'币安不可达')}
-let cd=0;
 async function refresh(){
-  if(mode==='demo'){tickDemo();render();return}
-  try{setMode('wait','连接中…');$('st').textContent='● 连接币安…';$('st').className='badge wait';
-    await refreshLive();setMode('live');coins.forEach(check);render();}
-  catch(e){seedDemo();setMode('demo','已自动降级');render();return}
-  cd=15;
+  if(mode==='demo'){tickDemo();evaluate();render();return}
+  try{$('st').textContent='● 连接币安…';$('st').className='badge wait';
+    await refreshLive();await refreshOI();setMode('live');evaluate();render();}
+  catch(e){if(!coins.length)seedDemo();setMode('demo','已自动降级');evaluate();render();return}
+  cd=IV[S.cnt]||20;
 }
-setInterval(()=>{if(cd>0){cd--;$('cd').textContent=mode==='live'?`刷新 ${cd}s`:mode==='demo'?'演示 · 模拟行情':'–';if(cd===0&&mode==='live')refresh()}},1000);
-setInterval(()=>{if(mode==='demo')refresh()},3000);
+setInterval(()=>{if(cd>0){cd--;$('cd').textContent=mode==='wait'?'–':`${mode==='demo'?'演示':'刷新'} ${cd}s`;
+  if(cd===0&&(mode==='live'||mode==='demo'))refresh()}},1000);
+/* 动态测量顶栏高度，供整体布局使用 */
+const setHH=()=>document.documentElement.style.setProperty('--hh',document.querySelector('header').offsetHeight+1+'px');
+addEventListener('resize',setHH);setHH();
 refresh();
 </script>
 </body>
